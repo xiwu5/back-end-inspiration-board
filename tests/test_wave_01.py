@@ -12,7 +12,6 @@ def test_board_to_dict():
 
     assert result == {"id": 1, "title": "Daily Affirmations", "cards": []}
 
-
 def test_board_from_dict():
     data = {"title": "Daily Affirmations"}
 
@@ -20,11 +19,9 @@ def test_board_from_dict():
 
     assert board.title == "Daily Affirmations"
 
-
 def test_board_from_dict_missing_title():
     with pytest.raises(KeyError, match="title"):
         Board.from_dict({})
-
 
 def test_card_to_dict():
     card = Card(id=2, card_message="Shine bright", likes=3, board_id=1)
@@ -38,7 +35,6 @@ def test_card_to_dict():
         "board_id": 1,
     }
 
-
 def test_card_from_dict():
     data = {"card_message": "Shine bright", "board_id": 1}
 
@@ -48,13 +44,11 @@ def test_card_from_dict():
     assert card.board_id == 1
     assert card.likes == 0
 
-
 def test_card_from_dict_missing_message():
     data = {"board_id": 1}
 
     with pytest.raises(KeyError, match="card_message"):
         Card.from_dict(data)
-
 
 def test_card_from_dict_missing_board_id():
     data = {"card_message": "Shine bright"}
@@ -62,13 +56,11 @@ def test_card_from_dict_missing_board_id():
     with pytest.raises(KeyError, match="board_id"):
         Card.from_dict(data)
 
-
 def test_get_boards_no_saved_boards(client):
     response = client.get("/boards")
 
     assert response.status_code == 200
     assert response.get_json() == []
-
 
 def test_get_boards_one_saved_board(client, one_board):
     response = client.get("/boards")
@@ -76,7 +68,6 @@ def test_get_boards_one_saved_board(client, one_board):
 
     assert response.status_code == 200
     assert response_body == [{"id": 1, "title": "Daily Affirmations", "card_count": 0}]
-
 
 def test_get_boards_includes_card_count(client, board_with_cards):
     response = client.get("/boards")
@@ -86,7 +77,6 @@ def test_get_boards_includes_card_count(client, board_with_cards):
     assert response_body == [
         {"id": 1, "title": "Daily Affirmations", "card_count": 2}
     ]
-
 
 def test_create_board(client):
     response = client.post("/boards", json={"title": "New Board"})
@@ -99,7 +89,6 @@ def test_create_board(client):
     assert board
     assert board.title == "New Board"
 
-
 def test_create_board_requires_title(client):
     response = client.post("/boards", json={})
     response_body = response.get_json()
@@ -107,7 +96,6 @@ def test_create_board_requires_title(client):
     assert response.status_code == 400
     assert response_body == {"details": "Invalid data"}
     assert db.session.scalars(db.select(Board)).all() == []
-
 
 def test_create_card(client, one_board):
     response = client.post(
@@ -129,7 +117,6 @@ def test_create_card(client, one_board):
     assert card.likes == 0
     assert card.board_id == 1
 
-
 def test_create_card_requires_message(client, one_board):
     response = client.post("/cards", json={"board_id": 1})
     response_body = response.get_json()
@@ -138,11 +125,130 @@ def test_create_card_requires_message(client, one_board):
     assert response_body == {"details": "Invalid data"}
     assert db.session.scalars(db.select(Card)).all() == []
 
-
 def test_create_card_requires_board_id(client, one_board):
     response = client.post("/cards", json={"card_message": "Stay positive"})
     response_body = response.get_json()
 
     assert response.status_code == 400
     assert response_body == {"details": "Invalid data"}
+    assert db.session.scalars(db.select(Card)).all() == []
+
+def test_get_one_board(client, one_board):
+    response = client.get("/boards/1")
+    response_body = response.get_json()
+
+    assert response.status_code == 200
+    assert response_body == {
+        "id": 1,
+        "title": "Daily Affirmations",
+        "cards": []
+    }
+
+
+def test_get_one_board_not_found(client):
+    response = client.get("/boards/1")
+    response_body = response.get_json()
+
+    assert response.status_code == 404
+    assert response_body == {"message": "Board 1 not found"}
+
+
+def test_get_one_card(client, one_card):
+    response = client.get("/cards/1")
+    response_body = response.get_json()
+
+    assert response.status_code == 200
+    assert response_body == {
+        "id": 1,
+        "card_message": "Stay kind",
+        "likes": 0,
+        "board_id": 1
+    }
+
+def test_get_one_card_not_found(client):
+    response = client.get("/cards/1")
+    response_body = response.get_json()
+
+    assert response.status_code == 404
+    assert response_body == {"message": "Card 1 not found"}
+
+def test_update_board(client, one_board):
+    response = client.put("/boards/1", json={
+        "title": "Updated Board Title"
+    })
+    response_body = response.get_json()
+
+    assert response.status_code == 200
+    assert response_body["id"] == 1
+    assert response_body["title"] == "Updated Board Title"
+
+    board = db.session.scalar(db.select(Board).where(Board.id == 1))
+    assert board.title == "Updated Board Title"
+
+
+def test_update_board_not_found(client):
+    response = client.put("/boards/1", json={
+        "title": "Updated Board Title"
+    })
+    response_body = response.get_json()
+
+    assert response.status_code == 404
+    assert response_body == {"message": "Board 1 not found"}
+
+
+def test_update_card(client, one_card):
+    response = client.put("/cards/1", json={
+        "card_message": "Updated message",
+        "likes": 5
+    })
+    response_body = response.get_json()
+
+    assert response.status_code == 200
+    assert response_body["id"] == 1
+    assert response_body["card_message"] == "Updated message"
+    assert response_body["likes"] == 5
+
+    card = db.session.scalar(db.select(Card).where(Card.id == 1))
+    assert card.card_message == "Updated message"
+    assert card.likes == 5
+
+
+def test_update_card_not_found(client):
+    response = client.put("/cards/1", json={
+        "card_message": "Updated message"
+    })
+    response_body = response.get_json()
+
+    assert response.status_code == 404
+    assert response_body == {"message": "Card 1 not found"}
+
+def test_delete_board(client, one_board):
+    response = client.delete("/boards/1")
+
+    assert response.status_code == 204
+    assert db.session.scalar(db.select(Board).where(Board.id == 1)) is None
+
+
+def test_delete_board_not_found(client):
+    response = client.delete("/boards/1")
+    response_body = response.get_json()
+
+    assert response.status_code == 404
+    assert response_body == {"message": "Board 1 not found"}
+    assert db.session.scalars(db.select(Board)).all() == []
+
+
+def test_delete_card(client, one_card):
+    response = client.delete("/cards/1")
+
+    assert response.status_code == 204
+    assert db.session.scalar(db.select(Card).where(Card.id == 1)) is None
+
+
+def test_delete_card_not_found(client):
+    response = client.delete("/cards/1")
+    response_body = response.get_json()
+
+    assert response.status_code == 404
+    assert response_body == {"message": "Card 1 not found"}
     assert db.session.scalars(db.select(Card)).all() == []
