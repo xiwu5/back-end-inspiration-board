@@ -27,6 +27,13 @@ class Board(db.Model):
             "cards": [card.to_dict() for card in self.cards],
         }
 
+    def to_dict_with_card_count(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "card_count": len(self.cards),
+        }
+
     def to_dict_with_cards(self):
         return self.to_dict()
 

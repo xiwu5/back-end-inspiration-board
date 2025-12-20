@@ -1,16 +1,38 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
+from ..models.card import Card
+from ..db import db
+from .route_utilities import validate_model, create_model, create_no_content_response
 
 cards_bp = Blueprint("cards", __name__, url_prefix="/cards")
 
 
 @cards_bp.post("")
 def create_card():
-    data = request.get_json() or {}
-    return jsonify(
-        {
-            "id": 1,
-            "card_message": data.get("card_message", ""),
-            "likes": data.get("likes", 0),
-            "board_id": data.get("board_id"),
-        }
-    ), 201
+    request_body = request.get_json()
+    return create_model(Card, request_body)
+
+@cards_bp.get("/<card_id>")
+def get_one_card(card_id):
+    card = validate_model(Card, card_id)
+    return card.to_dict(), 200
+
+@cards_bp.put("/<card_id>")
+def update_card(card_id):
+    card = validate_model(Card, card_id)
+    request_body = request.get_json()
+    
+    card.card_message = request_body.get("card_message", card.card_message)
+    card.likes = request_body.get("likes", card.likes)
+    
+    db.session.commit()
+    
+    return card.to_dict(), 200
+
+@cards_bp.delete("/<card_id>")
+def delete_card(card_id):
+    card = validate_model(Card, card_id)
+    
+    db.session.delete(card)
+    db.session.commit()
+    
+    return create_no_content_response()
