@@ -6,7 +6,7 @@ from ..db import db
 class Card(db.Model):
     __tablename__ = "cards"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    card_message: Mapped = mapped_column(String(255), nullable=False)
+    card_message: Mapped[str] = mapped_column(String(255), nullable=False)
     likes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     board_id: Mapped[int] = mapped_column(ForeignKey("boards.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
