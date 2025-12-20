@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String
+from sqlalchemy import String, DateTime, func
+from datetime import datetime
 from typing import List
 from ..db import db
 
@@ -8,6 +9,9 @@ class Board(db.Model):
     __tablename__ = "boards"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
     cards: Mapped[List["Card"]] = relationship("Card", back_populates="board", cascade="all, delete-orphan")
 
 
@@ -17,12 +21,14 @@ class Board(db.Model):
         return new_board
     
     def to_dict(self):
-        board_as_dict = {}
-        board_as_dict["id"] = self.id
-        board_as_dict["title"] = self.title
-        board_as_dict["cards"] = [card.to_dict() for card in self.cards]
-        return board_as_dict
+        return {
+            "id": self.id,
+            "title": self.title,
+            "cards": [card.to_dict() for card in self.cards],
+        }
 
+    def to_dict_with_cards(self):
+        return self.to_dict()
 
     @classmethod
     def get_by_id(cls, board_id):

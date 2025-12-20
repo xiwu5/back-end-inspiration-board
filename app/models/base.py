@@ -1,4 +1,4 @@
-from sqlalchemy.orm import DecalrativeBase
+# from sqlalchemy.orm import DecalrativeBase
 
-class Base(DecalrativeBase):
-    pass
+# class Base(DecalrativeBase):
+#     pass
