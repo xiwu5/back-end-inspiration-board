@@ -91,6 +91,6 @@ pytest -q
 - [x] Basic CRUD for boards and cards
 - [x] Errors for not found and invalid data
 - [x] Board↔Card relationship with cascade delete
-- [ ] Add `owner` to Board in code and routes
+- [x] Add `owner` to Board in code and routes
 - [ ] Enforce 40-char limit for card messages in routes
 - [ ] Implement `GET /boards/:id/cards` and `PATCH /cards/:id/like`
