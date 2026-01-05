@@ -9,6 +9,7 @@ class Board(db.Model):
     __tablename__ = "boards"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
+    owner: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
@@ -17,13 +18,14 @@ class Board(db.Model):
 
     @classmethod
     def from_dict(cls, board_data):
-        new_board = Board(title=board_data["title"])
+        new_board = Board(title=board_data["title"], owner=board_data["owner"])
         return new_board
     
     def to_dict(self):
         return {
             "id": self.id,
             "title": self.title,
+            "owner": self.owner,
             "cards": [card.to_dict() for card in self.cards],
         }
 
@@ -31,6 +33,7 @@ class Board(db.Model):
         return {
             "id": self.id,
             "title": self.title,
+            "owner": self.owner,
             "card_count": len(self.cards),
         }
 

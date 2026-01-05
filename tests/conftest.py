@@ -38,7 +38,7 @@ def client(app):
 
 @pytest.fixture
 def one_board(app):
-    board = Board(title="Daily Affirmations")
+    board = Board(title="Daily Affirmations", owner="Test Owner")
     db.session.add(board)
     db.session.commit()
 
@@ -47,9 +47,9 @@ def one_board(app):
 def three_boards(app):
     db.session.add_all(
         [
-            Board(title="Daily Affirmations"),
-            Board(title="Weekly Wins"),
-            Board(title="Monthly Goals"),
+            Board(title="Daily Affirmations", owner="Owner 1"),
+            Board(title="Weekly Wins", owner="Owner 2"),
+            Board(title="Monthly Goals", owner="Owner 3"),
         ]
     )
     db.session.commit()
@@ -57,7 +57,7 @@ def three_boards(app):
 
 @pytest.fixture
 def board_with_cards(app):
-    board = Board(title="Daily Affirmations")
+    board = Board(title="Daily Affirmations", owner="Test Owner")
     db.session.add(board)
     db.session.commit()
 

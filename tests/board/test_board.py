@@ -4,15 +4,16 @@ from app.models.board import Board
 
 
 def test_board_to_dict():
-    board = Board(id=1, title="Daily Affirmations")
+    board = Board(id=1, title="Daily Affirmations", owner="Owner")
     result = board.to_dict()
-    assert result == {"id": 1, "title": "Daily Affirmations", "cards": []}
+    assert result == {"id": 1, "title": "Daily Affirmations", "owner": "Owner", "cards": []}
 
 
 def test_board_from_dict():
-    data = {"title": "Daily Affirmations"}
+    data = {"title": "Daily Affirmations", "owner": "Owner"}
     board = Board.from_dict(data)
     assert board.title == "Daily Affirmations"
+    assert board.owner == "Owner"
 
 
 def test_board_from_dict_missing_title():
@@ -32,7 +33,7 @@ def test_get_boards_one_saved_board(client, one_board):
     response_body = response.get_json()
 
     assert response.status_code == 200
-    assert response_body == [{"id": 1, "title": "Daily Affirmations", "card_count": 0}]
+    assert response_body == [{"id": 1, "title": "Daily Affirmations", "owner": "Test Owner", "card_count": 0}]
 
 
 def test_get_boards_includes_card_count(client, board_with_cards):
@@ -41,20 +42,21 @@ def test_get_boards_includes_card_count(client, board_with_cards):
 
     assert response.status_code == 200
     assert response_body == [
-        {"id": 1, "title": "Daily Affirmations", "card_count": 2}
+        {"id": 1, "title": "Daily Affirmations", "owner": "Test Owner", "card_count": 2}
     ]
 
 
 def test_create_board(client):
-    response = client.post("/boards", json={"title": "New Board"})
+    response = client.post("/boards", json={"title": "New Board", "owner": "Creator"})
     response_body = response.get_json()
 
     assert response.status_code == 201
-    assert response_body == {"id": 1, "title": "New Board", "card_count": 0}
+    assert response_body == {"id": 1, "title": "New Board", "owner": "Creator", "card_count": 0}
 
     board = db.session.scalar(db.select(Board).where(Board.id == 1))
     assert board
     assert board.title == "New Board"
+    assert board.owner == "Creator"
 
 
 def test_create_board_requires_title(client):
@@ -74,6 +76,7 @@ def test_get_one_board(client, one_board):
     assert response_body == {
         "id": 1,
         "title": "Daily Affirmations",
+        "owner": "Test Owner",
         "cards": []
     }
 
@@ -95,6 +98,7 @@ def test_update_board(client, one_board):
     assert response.status_code == 200
     assert response_body["id"] == 1
     assert response_body["title"] == "Updated Board Title"
+    assert response_body["owner"] == "Test Owner"
 
     board = db.session.scalar(db.select(Board).where(Board.id == 1))
     assert board.title == "Updated Board Title"

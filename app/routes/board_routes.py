@@ -35,6 +35,7 @@ def update_board(board_id):
     request_body = request.get_json()
     
     board.title = request_body.get("title", board.title)
+    board.owner = request_body.get("owner", board.owner)
     
     db.session.commit()
     
