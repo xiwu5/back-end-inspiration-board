@@ -42,7 +42,7 @@ def test_card_from_dict_missing_board_id():
 
 def test_create_card(client, one_board):
     response = client.post(
-        "/cards", json={"card_message": "Stay positive", "board_id": 1}
+        "/boards/1/cards", json={"card_message": "Stay positive"}
     )
     response_body = response.get_json()
 
@@ -62,7 +62,7 @@ def test_create_card(client, one_board):
 
 
 def test_create_card_requires_message(client, one_board):
-    response = client.post("/cards", json={"board_id": 1})
+    response = client.post("/boards/1/cards", json={})
     response_body = response.get_json()
 
     assert response.status_code == 400
@@ -71,11 +71,12 @@ def test_create_card_requires_message(client, one_board):
 
 
 def test_create_card_requires_board_id(client, one_board):
-    response = client.post("/cards", json={"card_message": "Stay positive"})
+    # board_id is now provided by URL, so this test checks invalid board
+    response = client.post("/boards/999/cards", json={"card_message": "Stay positive"})
     response_body = response.get_json()
 
-    assert response.status_code == 400
-    assert response_body == {"details": "Invalid data"}
+    assert response.status_code == 404
+    assert "not found" in response_body["message"].lower()
     assert db.session.scalars(db.select(Card)).all() == []
 
 

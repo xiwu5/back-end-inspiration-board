@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from ..models.board import Board
+from ..models.card import Card
 from ..db import db
 from .route_utilities import validate_model, create_model, create_no_content_response
 
@@ -49,3 +50,25 @@ def delete_board(board_id):
     db.session.commit()
     
     return create_no_content_response()
+
+@boards_bp.get("/<board_id>/cards")
+def get_cards_for_board(board_id):
+    board = validate_model(Board, board_id)
+    cards_response = [card.to_dict() for card in board.cards]
+    return cards_response, 200
+
+@boards_bp.post("/<board_id>/cards")
+def create_card_for_board(board_id):
+    board = validate_model(Board, board_id)
+    request_body = request.get_json()
+    
+    try:
+        request_body["board_id"] = board.id
+        new_card = Card.from_dict(request_body)
+    except KeyError:
+        return {"details": "Invalid data"}, 400
+    
+    db.session.add(new_card)
+    db.session.commit()
+    
+    return new_card.to_dict(), 201

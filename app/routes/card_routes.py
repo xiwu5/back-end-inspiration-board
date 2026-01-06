@@ -5,12 +5,6 @@ from .route_utilities import validate_model, create_model, create_no_content_res
 
 cards_bp = Blueprint("cards", __name__, url_prefix="/cards")
 
-
-@cards_bp.post("")
-def create_card():
-    request_body = request.get_json()
-    return create_model(Card, request_body)
-
 @cards_bp.get("/<card_id>")
 def get_one_card(card_id):
     card = validate_model(Card, card_id)
