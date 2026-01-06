@@ -15,7 +15,7 @@ def update_card(card_id):
     card = validate_model(Card, card_id)
     request_body = request.get_json()
     
-    card.card_message = request_body.get("card_message", card.card_message)
+    card.message = request_body.get("message", card.message)
     card.likes = request_body.get("likes", card.likes)
     
     db.session.commit()

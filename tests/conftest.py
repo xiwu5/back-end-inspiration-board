@@ -62,8 +62,8 @@ def board_with_cards(app):
     db.session.commit()
 
     cards = [
-        Card(card_message="You can do it", likes=0, board_id=board.id),
-        Card(card_message="Keep going", likes=1, board_id=board.id),
+        Card(message="You can do it", likes=0, board_id=board.id),
+        Card(message="Keep going", likes=1, board_id=board.id),
     ]
     db.session.add_all(cards)
     db.session.commit()
@@ -71,7 +71,7 @@ def board_with_cards(app):
 
 @pytest.fixture
 def one_card(app, one_board):
-    card = Card(card_message="Stay kind", board_id=1, likes=0)
+    card = Card(message="Stay kind", board_id=1, likes=0)
     db.session.add(card)
     db.session.commit()
 
@@ -79,7 +79,7 @@ def one_card(app, one_board):
 @pytest.fixture
 def timestamped_card(app, one_board):
     card = Card(
-        card_message="Shine bright",
+        message="Shine bright",
         board_id=1,
         likes=0,
         created_at=datetime.now(),
