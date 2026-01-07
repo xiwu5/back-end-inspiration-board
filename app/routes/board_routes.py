@@ -63,6 +63,10 @@ def create_card_for_board(board_id):
     request_body = request.get_json()
     
     try:
+        message = request_body.get("message", "")
+        if not message or len(message) > 40:
+            return {"details": "Invalid data"}, 400
+        
         request_body["board_id"] = board.id
         new_card = Card.from_dict(request_body)
     except KeyError:

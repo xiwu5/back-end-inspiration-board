@@ -80,6 +80,35 @@ def test_create_card_requires_board_id(client, one_board):
     assert db.session.scalars(db.select(Card)).all() == []
 
 
+def test_create_card_message_too_long(client, one_board):
+    long_message = "a" * 41  # 41 characters
+    response = client.post("/boards/1/cards", json={"message": long_message})
+    response_body = response.get_json()
+
+    assert response.status_code == 400
+    assert response_body == {"details": "Invalid data"}
+    assert db.session.scalars(db.select(Card)).all() == []
+
+
+def test_create_card_message_exactly_40_chars(client, one_board):
+    message_40 = "a" * 40  # Exactly 40 characters
+    response = client.post("/boards/1/cards", json={"message": message_40})
+    response_body = response.get_json()
+
+    assert response.status_code == 201
+    assert response_body["message"] == message_40
+    assert len(response_body["message"]) == 40
+
+
+def test_create_card_empty_message(client, one_board):
+    response = client.post("/boards/1/cards", json={"message": ""})
+    response_body = response.get_json()
+
+    assert response.status_code == 400
+    assert response_body == {"details": "Invalid data"}
+    assert db.session.scalars(db.select(Card)).all() == []
+
+
 def test_get_one_card(client, one_card):
     response = client.get("/cards/1")
     response_body = response.get_json()
@@ -126,6 +155,31 @@ def test_update_card_not_found(client):
 
     assert response.status_code == 404
     assert response_body == {"message": "Card 1 not found"}
+
+
+def test_update_card_message_too_long(client, one_card):
+    long_message = "b" * 41  # 41 characters
+    response = client.put("/cards/1", json={"message": long_message})
+    response_body = response.get_json()
+
+    assert response.status_code == 400
+    assert response_body == {"details": "Invalid data"}
+    
+    # Verify card was not updated
+    card = db.session.scalar(db.select(Card).where(Card.id == 1))
+    assert card.message == "Stay kind"
+
+
+def test_update_card_empty_message(client, one_card):
+    response = client.put("/cards/1", json={"message": ""})
+    response_body = response.get_json()
+
+    assert response.status_code == 400
+    assert response_body == {"details": "Invalid data"}
+    
+    # Verify card was not updated
+    card = db.session.scalar(db.select(Card).where(Card.id == 1))
+    assert card.message == "Stay kind"
 
 
 def test_delete_card(client, one_card):

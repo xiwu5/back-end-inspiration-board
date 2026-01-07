@@ -92,5 +92,5 @@ pytest -q
 - [x] Errors for not found and invalid data
 - [x] Board↔Card relationship with cascade delete
 - [x] Add `owner` to Board in code and routes
-- [ ] Enforce 40-char limit for card messages in routes
+- [x] Enforce 40-char limit for card messages in routes
 - [x] Implement `GET /boards/:id/cards` and `PATCH /cards/:id/like`

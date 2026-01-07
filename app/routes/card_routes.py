@@ -15,7 +15,12 @@ def update_card(card_id):
     card = validate_model(Card, card_id)
     request_body = request.get_json()
     
-    card.message = request_body.get("message", card.message)
+    new_message = request_body.get("message")
+    if new_message is not None:
+        if not new_message or len(new_message) > 40:
+            return {"details": "Invalid data"}, 400
+        card.message = new_message
+    
     card.likes = request_body.get("likes", card.likes)
     
     db.session.commit()
