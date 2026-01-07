@@ -93,4 +93,4 @@ pytest -q
 - [x] Board↔Card relationship with cascade delete
 - [x] Add `owner` to Board in code and routes
 - [ ] Enforce 40-char limit for card messages in routes
-- [ ] Implement `GET /boards/:id/cards` and `PATCH /cards/:id/like`
+- [x] Implement `GET /boards/:id/cards` and `PATCH /cards/:id/like`

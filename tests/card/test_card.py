@@ -142,3 +142,36 @@ def test_delete_card_not_found(client):
     assert response.status_code == 404
     assert response_body == {"message": "Card 1 not found"}
     assert db.session.scalars(db.select(Card)).all() == []
+
+
+def test_like_card(client, one_card):
+    response = client.patch("/cards/1/like")
+    response_body = response.get_json()
+
+    assert response.status_code == 200
+    assert response_body["id"] == 1
+    assert response_body["likes"] == 1
+
+    card = db.session.scalar(db.select(Card).where(Card.id == 1))
+    assert card.likes == 1
+
+
+def test_like_card_multiple_times(client, one_card):
+    client.patch("/cards/1/like")
+    client.patch("/cards/1/like")
+    response = client.patch("/cards/1/like")
+    response_body = response.get_json()
+
+    assert response.status_code == 200
+    assert response_body["likes"] == 3
+
+    card = db.session.scalar(db.select(Card).where(Card.id == 1))
+    assert card.likes == 3
+
+
+def test_like_card_not_found(client):
+    response = client.patch("/cards/1/like")
+    response_body = response.get_json()
+
+    assert response.status_code == 404
+    assert response_body == {"message": "Card 1 not found"}

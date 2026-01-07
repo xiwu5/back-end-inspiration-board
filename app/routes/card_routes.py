@@ -22,6 +22,15 @@ def update_card(card_id):
     
     return card.to_dict(), 200
 
+@cards_bp.patch("/<card_id>/like")
+def like_card(card_id):
+    card = validate_model(Card, card_id)
+    
+    card.likes += 1
+    db.session.commit()
+    
+    return card.to_dict(), 200
+
 @cards_bp.delete("/<card_id>")
 def delete_card(card_id):
     card = validate_model(Card, card_id)
